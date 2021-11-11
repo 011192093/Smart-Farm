@@ -1,0 +1,169 @@
+#include <LiquidCrystal.h>
+
+LiquidCrystal lcd(12, 11, 5, 4, 3, 2);
+
+float temp;
+int tempPin = A1;
+int ldr_pin = A5;
+int relayPin = 8;
+int buzzerPin = 6;
+int heater = 7;
+int ldrValue = 0;
+int bulbs = 8;
+
+
+#define fan 9
+
+void setup(){
+  
+  	Serial.begin(9600);
+	pinMode(fan, OUTPUT);
+    pinMode(relayPin, OUTPUT);
+  	pinMode(buzzerPin, OUTPUT);
+  	pinMode(heater, OUTPUT);
+	pinMode(ldr_pin, INPUT);
+	pinMode(8, OUTPUT);
+  
+  
+  	lcd.begin(16, 3);
+  
+  	lcd.setCursor(3,1);
+  	lcd.print("!!Welcome!!");
+  	delay(1000);
+  	lcd.clear();
+    lcd.setCursor(3,0);
+    lcd.print(" Group 3");
+    delay(1500);
+    lcd.clear();
+
+    lcd.setCursor(3,0);
+    lcd.print("Smart Farm");
+    delay(1500);
+    lcd.clear();
+ 
+}
+
+void loop()
+{
+	lcd.setCursor(3,0);
+  	lcd.print("Recording");
+	lcd.setCursor(2, 1);
+	lcd.print("Temperature..");
+	delay(1000);
+	lcd.clear();
+	lcd.setCursor(0,2);
+	temp = analogRead(tempPin);
+  	ldrValue = analogRead(ldr_pin);
+  
+  	if(ldrValue > 500)
+        digitalWrite(bulbs, LOW);
+      else 
+        digitalWrite(bulbs, HIGH);
+
+  
+  	Serial.println(temp);
+  	
+  
+  //temp = temp*0.48828125;
+    float voltage = temp * 5.0;
+      voltage /= 1024.0; 
+
+      // print out the voltage
+      lcd.print(voltage); lcd.println(" volts");
+
+      // now print out the temperature
+      float temperatureC = (voltage - 0.5) * 100 ;  //converting from 10 mv per degree wit 500 mV offset
+                                                    //to degrees ((voltage - 500mV) times 100)
+
+    lcd.setCursor(0, 0);
+    lcd.print("Temperature = ");
+    lcd.setCursor(2,1);
+    //lcd.print(temp);
+    lcd.print(temperatureC); lcd.println(" degree C");
+    delay(1500);
+    lcd.clear();
+  
+
+  Serial.println(ldrValue);
+
+
+    if(temperatureC>40)
+      digitalWrite(buzzerPin,HIGH);
+    else
+      digitalWrite(buzzerPin,LOW);
+
+    if(temperatureC<24)
+      digitalWrite(heater,HIGH);
+    else
+      digitalWrite(heater,LOW);
+  
+      
+  
+
+
+    if(temperatureC >= 24)
+    {
+      poweronRelay();
+      if(temperatureC >= 24 && temperatureC <= 29)
+      {
+        analogWrite(fan,51);
+        lcd.print("Fan Speed: 20% ");
+        delay(1500);
+        lcd.clear();
+      }
+      else if(temperatureC <= 34)
+      {
+        analogWrite(fan,102);
+        lcd.print("Fan Speed: 40% ");
+        delay(1500);
+        lcd.clear();
+      }
+      else if(temperatureC <= 36)
+      {
+        analogWrite(fan,153);
+        lcd.print("Fan Speed: 60% ");
+        delay(1500);
+        lcd.clear();
+      }
+      else if(temperatureC <= 38)
+      {
+        analogWrite(fan,200);
+        lcd.print("Fan Speed: 80% ");
+        delay(1500);
+        lcd.clear();
+      }
+      else if(temperatureC >= 40)
+      {
+        analogWrite(fan,255);
+        lcd.print("Fan Speed: 100% ");
+        delay(1500);
+        lcd.clear();
+      }
+    }
+  
+	else
+	{
+      poweroffRelay();
+    }
+}
+
+
+   void poweronRelay()
+    {
+      digitalWrite(relayPin, HIGH);
+      lcd.setCursor(3,0);
+      lcd.print("  Fan ON");
+      delay(1000);
+      lcd.clear();
+
+    }
+  void poweroffRelay()
+    {
+      digitalWrite(relayPin, LOW);
+      analogWrite(fan,0);
+      lcd.setCursor(3,0);
+      lcd.print(" Fan OFF");
+      delay(1000);
+      lcd.clear();
+     }
+
