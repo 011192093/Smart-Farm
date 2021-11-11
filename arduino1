@@ -1,0 +1,16 @@
+int gearmotor = 13;
+
+void setup()
+{
+  pinMode(gearmotor, OUTPUT);
+}
+
+void loop()
+{  
+    digitalWrite(gearmotor, HIGH);
+  	// the motor will be stay on for 2 minutes
+    delay(120000); 
+    digitalWrite(gearmotor, LOW);
+	// the motor will be stay on for 4 minutes
+    delay(240000);  
+}
